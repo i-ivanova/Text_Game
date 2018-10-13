@@ -1,11 +1,49 @@
 import pygame
 import pygame_textinput
 import pygame_button
+import os
 
 DECISIONS = {"username": ""}
 pygame.init()
 SCREEN = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 pygame.display.set_caption('The Escape Game')
+
+def load_image(path):
+	image = pygame.image.load(path)
+	return image
+
+class Kayla(pygame.sprite.Sprite):
+	def __init__(self):
+		super(Kayla, self).__init__()
+		kayla_images_dance = ["kayla{}.png".format(str(x)) for x in range(1,7)]
+		print (kayla_images_dance)
+
+		self.index = 0
+		self.images = []
+		for name in kayla_images_dance:
+			stage = load_image(os.path.join("Kayla", name))
+			self.images.append(stage)
+		self.image = self.images[self.index]
+		self.normal = False
+		self.rect = self.image.get_rect()
+		self.rect.center = (SCREEN.get_width() / 2, SCREEN.get_height() / 2)
+
+	def update(self):
+		self.index += 1
+		if self.index >= len(self.images):
+			self.index = 0
+		if self.normal:
+			self.index = 1
+		self.image = self.images[self.index]
+
+class Background(pygame.sprite.Sprite):
+	def __init__(self, image_file, location):
+		#call Sprite initializer
+		super(Background, self).__init__()
+		self.image = load_image(image_file)
+		self.image = pygame.transform.scale(self.image, (SCREEN.get_width(), SCREEN.get_height()))
+		self.rect = self.image.get_rect()
+		self.rect.left, self.rect.top = location
 
 
 def setup_front_page(pygame_screen):
@@ -70,7 +108,6 @@ def front_page():
 		exit_button.draw(SCREEN)
 		pygame.display.update()
 
-		clock.tick(30)
 
 # start game
 def start_game(username_input):
@@ -80,6 +117,24 @@ def start_game(username_input):
 	DECISIONS["username"] = username_input.get_text()
 	SCREEN.fill((18, 17, 44))
 	pygame.display.update()
+	kayla_dance = Kayla()
+	all_sprites = pygame.sprite.Group()
+	all_sprites.add(kayla_dance)
+	BackGround = Background(os.path.join("Crowd", "dance_floor.png"), [0,0])
+
+	while True:
+		pygame.time.delay(150)
+		events = pygame.event.get()
+		for event in events:
+			keys = pygame.key.get_pressed()
+			if keys[pygame.K_ESCAPE]:
+				return
+
+		SCREEN.fill([255, 255, 255])
+		SCREEN.blit(BackGround.image, BackGround.rect)
+		kayla_dance.update()
+		all_sprites.draw(SCREEN)
+		pygame.display.update()
 
 
 if __name__ == "__main__":
