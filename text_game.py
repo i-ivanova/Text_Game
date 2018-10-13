@@ -1,7 +1,6 @@
 import pygame
 import pygame_textinput
 import pygame_button
-import round_rect as rr
 import os
 
 DECISIONS = {"username": ""}
