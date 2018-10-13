@@ -30,6 +30,7 @@ or implied, of Al Sweigart.
 import pygame
 from pygame.locals import *
 
+
 pygame.font.init()
 PYGBUTTON_FONT = pygame.font.Font('freesansbold.ttf', 14)
 
@@ -38,6 +39,18 @@ WHITE     = (255, 255, 255)
 DARKGRAY  = ( 64,  64,  64)
 GRAY      = (128, 128, 128)
 LIGHTGRAY = (212, 208, 200)
+
+def color_variant(hex_color, brightness_offset=40):
+    """ takes a color like #87c95f and produces a lighter or darker variant """
+    if len(hex_color) != 7:
+        raise Exception("Passed %s into color_variant(), needs to be in #87c95f format." % hex_color)
+    rgb_hex = [hex_color[x:x+2] for x in [1, 3, 5]]
+    new_rgb_int = [int(hex_value, 16) + brightness_offset for hex_value in rgb_hex]
+    new_rgb_int = [min([255, max([0, i])]) for i in new_rgb_int] # make sure new values are between 0 and 255
+    return tuple(new_rgb_int)
+
+def rgb_to_hex(rgb):
+    return '#%02x%02x%02x' % rgb
 
 class PygButton(object):
     def __init__(self, rect=None, caption='', bgcolor=LIGHTGRAY, fgcolor=BLACK, font=None, normal=None, down=None, highlight=None):
@@ -74,6 +87,7 @@ class PygButton(object):
         self._caption = caption
         self._bgcolor = bgcolor
         self._fgcolor = fgcolor
+        self.hover_color = color_variant(rgb_to_hex(bgcolor))
 
         if font is None:
             self._font = PYGBUTTON_FONT
@@ -97,7 +111,6 @@ class PygButton(object):
             # create the surfaces for a custom image button
             self.setSurfaces(normal, down, highlight)
 
-        self.hovered = False
 
     def handleEvent(self, eventObj):
         """All MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN event objects
@@ -126,6 +139,7 @@ class PygButton(object):
             self.mouseOverButton = True
             self.mouseEnter(eventObj)
             retVal.append('enter')
+
         elif self.mouseOverButton and not self._rect.collidepoint(eventObj.pos):
             # if mouse has exited the button:
             self.mouseOverButton = False
@@ -192,13 +206,12 @@ class PygButton(object):
         h = self._rect.height # syntactic sugar
 
         # fill background color for all buttons
-        self.surfaceNormal.fill(self.bgcolor)
-        self.surfaceDown.fill(self.bgcolor)
-        self.surfaceHighlight.fill(self.bgcolor)
-        self.check_hover()
+        self.surfaceNormal.fill(self._bgcolor)
+        self.surfaceDown.fill(self._bgcolor)
+        self.surfaceHighlight.fill(self._bgcolor)
 
         # draw caption text for all buttons
-        captionSurf = self._font.render(self._caption, True, self.fgcolor, self.bgcolor)
+        captionSurf = self._font.render(self._caption, True, self._fgcolor, self._bgcolor)
         captionRect = captionSurf.get_rect()
         captionRect.center = int(w / 2), int(h / 2)
         self.surfaceNormal.blit(captionSurf, captionRect)
@@ -228,14 +241,25 @@ class PygButton(object):
 
     def mouseClick(self, event):
         pass # This class is meant to be overridden.
+
     def mouseEnter(self, event):
-        pass # This class is meant to be overridden.
+        temp = self._bgcolor
+        self._bgcolor = self.hover_color
+        self.hover_color = temp
+        self._update()
+
     def mouseMove(self, event):
         pass # This class is meant to be overridden.
+
     def mouseExit(self, event):
-        pass # This class is meant to be overridden.
+        temp = self._bgcolor
+        self._bgcolor = self.hover_color
+        self.hover_color = temp
+        self._update()
+
     def mouseDown(self, event):
         pass # This class is meant to be overridden.
+
     def mouseUp(self, event):
         pass # This class is meant to be overridden.
 
@@ -324,15 +348,6 @@ class PygButton(object):
         self.customSurfaces = False
         self._font = setting
         self._update()
-
-    def check_hover(self):
-        if self._rect.collidepoint(pygame.mouse.get_pos()):
-            if not self.hovered:
-                self.hovered = True
-                tuple = self._bgcolor
-                self._bgcolor = (tuple[0] - 40, tuple[1] - 40, tuple[2] - 40)
-        else:
-            self.hovered = False
 
 
     caption = property(_propGetCaption, _propSetCaption)
