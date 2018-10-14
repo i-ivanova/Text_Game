@@ -242,9 +242,9 @@ def dead_walk():
 		events = pygame.event.get()
 		for event in events:
 			# if user name is not empty and play_button is pressed start game
-			if 'click' in next_button.handleEvent(event):
-				front_page()
-				return
+			if 'click' in restart.handleEvent(event):
+				return front_page()
+				
 
 			if 'click' in exit_button.handleEvent(event):
 				return
@@ -284,6 +284,7 @@ def main_location():
 				return
 
 			if 'click' in decisions.decision1.handleEvent(event):
+				print ("Bar")
 				return
 
 			if 'click' in decisions.decision2.handleEvent(event):
@@ -293,14 +294,13 @@ def main_location():
 				sobriety -= 1
 				continue
 
-			if 'click' in decisions.decision4.handleEvent(event) and club[4] == "...":
-				continue
+			if 'click' in decisions.decision4.handleEvent(event):
+				if club[4] == "...":
+					continue
+				else:
+					return bus_stop()
 
-			if 'click' in decisions.decision4.handleEvent(event) and club[4] == "Leave":
-				return bus_stop()
 				
-
-
 		SCREEN.fill([255, 255, 255])
 		SCREEN.blit(BackGround.image, BackGround.rect)
 		kayla_normal.update()
@@ -388,10 +388,6 @@ def bus_stop():
 		pygame.time.delay(150)
 		events = pygame.event.get()
 		for event in events:
-			keys = pygame.key.get_pressed()
-			if keys[pygame.K_ESCAPE]:
-				return
-
 			if 'click' in decisions.decision1.handleEvent(event):
 				if call_flag:
 					print ("It's too late, there are no busses at this time, you shouldn't have partied.")
@@ -412,7 +408,7 @@ def bus_stop():
 				
 		SCREEN.fill([255, 255, 255])
 		SCREEN.blit(BackGround.image, BackGround.rect)
-		kayla_dance.update()
+		kayla_normal.update()
 		all_sprites.draw(SCREEN)
 		decisions.draw(SCREEN)
 		pygame.display.update()
